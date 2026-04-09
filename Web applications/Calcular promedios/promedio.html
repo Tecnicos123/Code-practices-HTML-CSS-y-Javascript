@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promedio - Práctica de Programación</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+        
+        :root {
+            --primary: #00b4d8;
+            --success: #00c853;
+            --danger: #ff1744;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(90deg, var(--primary), #0077b6);
+            color: white;
+            padding: 30px 40px;
+            text-align: center;
+        }
+        
+        header h1 { font-size: 2.5rem; margin-bottom: 8px; }
+        header p { font-size: 1.1rem; opacity: 0.9; }
+        
+        .main { padding: 40px; }
+        
+        .add-grade {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        input[type="number"] {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1.1rem;
+        }
+        
+        input[type="number"]:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(0, 180, 216, 0.2);
+        }
+        
+        button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-add { background: var(--primary); color: white; }
+        .btn-add:hover { background: #0077b6; transform: translateY(-3px); }
+        
+        .btn-calculate {
+            background: #00c853;
+            color: white;
+            width: 100%;
+            margin-top: 10px;
+            padding: 18px;
+            font-size: 1.3rem;
+        }
+        
+        .btn-pdf {
+            background: #ff9800;
+            color: white;
+            width: 100%;
+            margin-top: 10px;
+            padding: 18px;
+            font-size: 1.2rem;
+        }
+        
+        .btn-clear {
+            background: #ff1744;
+            color: white;
+            width: 100%;
+            margin-top: 15px;
+        }
+        
+        .grades-list {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            min-height: 120px;
+        }
+        
+        .grade-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 12px 20px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .remove-btn {
+            background: #ff1744;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        
+        .results {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            display: none;
+        }
+        
+        .results.show { display: block; }
+        
+        .average {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin: 20px 0;
+            color: var(--primary);
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        
+        .status.aprobado { background: #00c853; color: white; }
+        .status.fracaso { background: #ff1744; color: white; }
+        
+        .example {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Promedio</h1>
+            <p>Práctica de Programación para Estudiantes</p>
+        </header>
+        
+        <div class="main">
+            <h2 style="margin-bottom: 20px; color: #222;">Ingresa tus notas</h2>
+            
+            <div class="add-grade">
+                <input type="number" id="nuevaNota" step="0.1" min="1.0" max="5.0" placeholder="Ej: 4.5" />
+                <button class="btn-add" onclick="agregarNota()">➕ Agregar Nota</button>
+            </div>
+            
+            <div class="grades-list" id="listaNotas">
+                <p style="color: #888; text-align: center; padding: 30px 0;">Aún no has agregado notas...<br><strong>¡Agrega las primeras!</strong></p>
+            </div>
+            
+            <button class="btn-calculate" onclick="calcularPromedio()">
+                📐 Calcular Promedio
+            </button>
+            
+            <button class="btn-pdf" onclick="exportarPDF()" id="btnPDF" style="display: none;">
+                📄 Exportar a PDF
+            </button>
+            
+            <button class="btn-clear" onclick="limpiarTodo()">
+                🗑️ Limpiar Todo
+            </button>
+            
+            <!-- Resultados -->
+            <div class="results" id="resultados">
+                <h3 style="margin-bottom: 15px;">📋 Resultados</h3>
+                
+                <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 1.3rem;">
+                    <span>Cantidad de notas:</span>
+                    <span id="cantidad" style="font-weight: 600;">0</span>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 1.3rem;">
+                    <span>Suma total:</span>
+                    <span id="suma" style="font-weight: 600;">0.00</span>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 1.3rem;">
+                    <span>Promedio:</span>
+                    <span class="average" id="promedio">0.00</span>
+                </div>
+                
+                <div id="estado" class="status"></div>
+            </div>
+            
+            <div class="example">
+                <strong>Ejemplo:</strong> 3.5, 4.5, 4.8, 2.5 → Promedio = 3.83 → <strong>Aprobado</strong>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let notas = [];
+        
+        function agregarNota() {
+            const input = document.getElementById('nuevaNota');
+            const valor = parseFloat(input.value);
+            
+            if (isNaN(valor) || valor < 1.0 || valor > 5.0) {
+                alert('❌ Ingresa una nota válida entre 1.0 y 5.0');
+                return;
+            }
+            
+            notas.push(valor);
+            input.value = '';
+            renderizarLista();
+        }
+        
+        function renderizarLista() {
+            const lista = document.getElementById('listaNotas');
+            
+            if (notas.length === 0) {
+                lista.innerHTML = `<p style="color: #888; text-align: center; padding: 30px 0;">Aún no has agregado notas...<br><strong>¡Agrega las primeras!</strong></p>`;
+                return;
+            }
+            
+            let html = '';
+            for (let i = 0; i < notas.length; i++) {
+                html += `
+                    <div class="grade-item">
+                        <span style="font-size: 1.3rem; font-weight: 600;">Nota ${i+1}: <strong>${notas[i]}</strong></span>
+                        <span class="remove-btn" onclick="eliminarNota(${i})">×</span>
+                    </div>`;
+            }
+            lista.innerHTML = html;
+        }
+        
+        function eliminarNota(index) {
+            notas.splice(index, 1);
+            renderizarLista();
+        }
+        
+        function calcularPromedio() {
+            if (notas.length === 0) {
+                alert('⚠️ Agrega al menos una nota');
+                return;
+            }
+            
+            let suma = notas.reduce((a, b) => a + b, 0);
+            let promedio = suma / notas.length;
+            let promedioRed = promedio.toFixed(2);
+            
+            document.getElementById('cantidad').textContent = notas.length;
+            document.getElementById('suma').textContent = suma.toFixed(2);
+            document.getElementById('promedio').textContent = promedioRed;
+            
+            const estadoDiv = document.getElementById('estado');
+            const resultadosDiv = document.getElementById('resultados');
+            resultadosDiv.classList.add('show');
+            
+            if (promedio >= 3.0) {
+                estadoDiv.textContent = '✅ Aprobado el curso';
+                estadoDiv.className = 'status aprobado';
+            } else {
+                estadoDiv.textContent = '❌ Fracaso';
+                estadoDiv.className = 'status fracaso';
+            }
+            
+            // Mostrar botón de PDF
+            document.getElementById('btnPDF').style.display = 'block';
+            
+            resultadosDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function exportarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const fecha = new Date().toLocaleDateString('es-ES');
+            
+            // Título
+            doc.setFontSize(22);
+            doc.text("Reporte de Promedio", 105, 20, { align: "center" });
+            
+            doc.setFontSize(12);
+            doc.text(`Fecha: ${fecha}`, 20, 35);
+            
+            // Notas
+            doc.setFontSize(14);
+            doc.text("Notas ingresadas:", 20, 50);
+            
+            let y = 60;
+            for (let i = 0; i < notas.length; i++) {
+                doc.text(`• Nota ${i+1}: ${notas[i]}`, 25, y);
+                y += 10;
+            }
+            
+            // Resultados
+            y += 10;
+            doc.setFontSize(16);
+            doc.text("Resultados:", 20, y);
+            y += 15;
+            
+            doc.setFontSize(13);
+            let suma = notas.reduce((a, b) => a + b, 0);
+            let promedio = (suma / notas.length).toFixed(2);
+            
+            doc.text(`Cantidad de notas: ${notas.length}`, 25, y); y += 10;
+            doc.text(`Suma total: ${suma.toFixed(2)}`, 25, y); y += 10;
+            doc.text(`Promedio: ${promedio}`, 25, y); y += 15;
+            
+            // Estado
+            if (parseFloat(promedio) >= 3.0) {
+                doc.setTextColor(0, 200, 83);
+                doc.text("✅ APROBADO EL CURSO", 25, y);
+            } else {
+                doc.setTextColor(255, 23, 68);
+                doc.text("❌ FRACASO", 25, y);
+            }
+            
+            // Pie de página
+            doc.setFontSize(10);
+            doc.setTextColor(100);
+            doc.text("Práctica de Programación - Promedio", 105, 280, { align: "center" });
+            
+            // Descargar
+            doc.save(`Promedio_${fecha.replace(/\//g, '-')}.pdf`);
+        }
+        
+        function limpiarTodo() {
+            if (confirm('¿Borrar todas las notas?')) {
+                notas = [];
+                renderizarLista();
+                document.getElementById('resultados').classList.remove('show');
+                document.getElementById('btnPDF').style.display = 'none';
+            }
+        }
+        
+        // Enter para agregar nota
+        document.getElementById('nuevaNota').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') agregarNota();
+        });
+    </script>
+</body>
+</html>
