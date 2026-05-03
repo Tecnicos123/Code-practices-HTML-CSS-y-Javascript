@@ -6,6 +6,7 @@
 .main-container {
   max-width: 800px;
   margin: auto;
+  padding: 0 15px;
 }
 h1.titulo {
   margin: 50px auto 80px auto;
@@ -92,4 +93,55 @@ picture img {
 .encuadre {
   border: 2px dashed crimson;
   padding: 3px 2px 2px 6px;
+}
+
+@media (max-width: 700px) {
+  .flex-row {
+    flex-direction: column;
+    align-items: center;
+    margin: 5px auto;
+  }
+
+  .col {
+    width: 100%;
+  }
+
+  .no-wrap {
+    flex-wrap: wrap !important;
+  }
+
+  #turnos {
+    gap: 12px;
+    width: 100%;
+  }
+
+  picture {
+    width: 100%;
+    height: auto;
+    margin: 0;
+  }
+
+  picture img {
+    position: static;
+    display: block;
+    margin: 0 auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 260px;
+  }
+
+  h1.titulo {
+    margin-top: 30px;
+    margin-bottom: 40px;
+  }
+
+  h2.palabra {
+    margin-bottom: 10px;
+    letter-spacing: 4px;
+    font-size: 1.4rem;
+  }
+
+  #abcdario {
+    width: 100%;
+  }
 }

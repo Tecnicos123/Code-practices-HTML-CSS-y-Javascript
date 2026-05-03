@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Conversor Metros a Kilómetros</title>
+</head>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+    }
+    button {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+    
+</style>
+<body>
+
+    <h2>Conversor de Metros a Kilómetros</h2>
+    <p>Haz clic en el botón para convertir</p>
+
+    <button onclick="convertir()">Convertir Metros a Km</button>
+
+    <script>
+        function convertir() {
+            // Ventana emergente para pedir los metros
+            let metros = prompt("Ingrese la altura en metros: ");
+
+            // Validación básica
+            if (metros === null || metros.trim() === "") {
+                alert("No se ingresó ningún valor.");
+                return;
+            }
+
+            // Convertir a número
+            let metrosNum = parseFloat(metros);
+
+            if (isNaN(metrosNum)) {
+                alert("Por favor, ingrese un número válido.");
+                return;
+            }
+
+            // Realizar la conversión
+            let km = metrosNum / 1000;
+
+            // Mostrar resultado en ventana emergente
+            alert(metrosNum + " metros = " + km + " kilómetros\n\n" +
+                  "Redondeado: " + km.toFixed(2) + " km");
+        }
+    </script>
+
+</body>
+</html>
