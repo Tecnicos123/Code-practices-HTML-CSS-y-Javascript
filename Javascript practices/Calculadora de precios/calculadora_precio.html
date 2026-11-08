@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Calculadora de precio</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f4f8;
+      display: flex;
+      justify-content: center;
+      padding: 40px 16px;
+      margin: 0;
+    }
+    .tarjeta {
+      background: #fff;
+      width: 100%;
+      max-width: 520px;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, .1);
+    }
+    h1 { font-size: 1.3rem; margin-top: 0; }
+    label { display: block; font-size: .85rem; color: #555; margin-bottom: 4px; }
+    .fila { display: flex; gap: 12px; align-items: flex-end; margin-bottom: 16px; }
+    .campo { flex: 1; }
+    input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+    button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      background: #2563eb;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    button:hover { background: #1d4ed8; }
+    .oculto { display: none; }
+    .error { color: #b91c1c; font-size: .9rem; margin: 0 0 12px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    td { padding: 10px 4px; border-bottom: 1px solid #eee; }
+    td:last-child { text-align: right; }
+    .total td { font-weight: bold; font-size: 1.1rem; border-bottom: none; color: #15803d; }
+  </style>
+</head>
+<body>
+  <div class="tarjeta">
+    <h1>Calculadora de precio</h1>
+
+    <!-- Paso 1: precio e impuesto en un mismo renglón -->
+    <div class="fila">
+      <div class="campo">
+        <label for="precio">Precio del producto</label>
+        <input type="number" id="precio" min="0" step="0.01" placeholder="Ej: 100">
+      </div>
+      <div class="campo">
+        <label for="impuesto">Impuesto (%)</label>
+        <input type="number" id="impuesto" min="0" step="0.01" placeholder="Ej: 7">
+      </div>
+      <button id="btnSiguiente">Siguiente</button>
+    </div>
+
+    <!-- Paso 2: descuento (aparece después del paso 1) -->
+    <div id="pasoDescuento" class="fila oculto">
+      <div class="campo">
+        <label for="descuento">Descuento por promoción (%)</label>
+        <input type="number" id="descuento" min="0" max="100" step="0.01" placeholder="Ej: 10">
+      </div>
+      <button id="btnCalcular">Calcular</button>
+    </div>
+
+    <p id="mensaje" class="error"></p>
+
+    <!-- Resultado -->
+    <table id="resultado" class="oculto">
+      <tr><td>Precio de lista</td><td id="rLista"></td></tr>
+      <tr><td id="tImpuesto"></td><td id="rImpuesto"></td></tr>
+      <tr><td>Precio + impuesto</td><td id="rConImpuesto"></td></tr>
+      <tr><td id="tDescuento"></td><td id="rDescuento"></td></tr>
+      <tr class="total"><td>Precio a pagar</td><td id="rTotal"></td></tr>
+    </table>
+  </div>
+
+  <script>
+    // Referencias a los elementos
+    const inputPrecio = document.getElementById("precio");
+    const inputImpuesto = document.getElementById("impuesto");
+    const inputDescuento = document.getElementById("descuento");
+    const pasoDescuento = document.getElementById("pasoDescuento");
+    const mensaje = document.getElementById("mensaje");
+    const tabla = document.getElementById("resultado");
+
+    // Da formato de dinero: 1234.5 -> $1,234.50
+    function dinero(n) {
+      return "$" + n.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    // Paso 1: valida precio e impuesto y muestra el campo de descuento
+    document.getElementById("btnSiguiente").addEventListener("click", () => {
+      const precio = parseFloat(inputPrecio.value);
+      const impuesto = parseFloat(inputImpuesto.value);
+
+      tabla.classList.add("oculto");
+
+      if (isNaN(precio) || precio < 0 || isNaN(impuesto) || impuesto < 0) {
+        mensaje.textContent = "Escribe un precio y un impuesto válidos (números mayores o iguales a 0).";
+        pasoDescuento.classList.add("oculto");
+        return;
+      }
+
+      mensaje.textContent = "";
+      pasoDescuento.classList.remove("oculto");
+      inputDescuento.focus();
+    });
+
+    // Paso 2: calcula y muestra los resultados
+    document.getElementById("btnCalcular").addEventListener("click", () => {
+      const precio = parseFloat(inputPrecio.value);
+      const impuesto = parseFloat(inputImpuesto.value);
+      const descuento = parseFloat(inputDescuento.value);
+
+      if (isNaN(descuento) || descuento < 0 || descuento > 100) {
+        mensaje.textContent = "El descuento debe estar entre 0 y 100.";
+        tabla.classList.add("oculto");
+        return;
+      }
+      mensaje.textContent = "";
+
+      // Cálculos
+      const montoImpuesto = precio * impuesto / 100;
+      const precioConImpuesto = precio + montoImpuesto;
+      const montoDescuento = precioConImpuesto * descuento / 100;
+      const precioFinal = precioConImpuesto - montoDescuento;
+
+      // Mostrar resultados
+      document.getElementById("rLista").textContent = dinero(precio);
+      document.getElementById("tImpuesto").textContent = "Impuesto (" + impuesto + "%)";
+      document.getElementById("rImpuesto").textContent = "+ " + dinero(montoImpuesto);
+      document.getElementById("rConImpuesto").textContent = dinero(precioConImpuesto);
+      document.getElementById("tDescuento").textContent = "Descuento (" + descuento + "%)";
+      document.getElementById("rDescuento").textContent = "- " + dinero(montoDescuento);
+      document.getElementById("rTotal").textContent = dinero(precioFinal);
+      tabla.classList.remove("oculto");
+    });
+  </script>
+</body>
+</html>
